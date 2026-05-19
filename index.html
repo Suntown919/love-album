@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📸 我们的日常相册</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #faf7f2;
+            color: #2c2418;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: #fff0e5;
+            border-radius: 32px;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #d96c4e, #b44d2e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-4px); }
+        .card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            background: #ede4d8;
+        }
+        .info {
+            padding: 16px;
+        }
+        .note {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .meta {
+            font-size: 0.8rem;
+            color: #a77b5a;
+            display: flex;
+            gap: 16px;
+            border-top: 1px solid #f0e2d4;
+            padding-top: 10px;
+            margin-top: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #b8927a;
+            font-size: 0.8rem;
+        }
+        /* 评论区域样式 */
+        .comments-section {
+            background: #fff9f3;
+            border-radius: 28px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .comments-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>✨ 我们的时光相册 ✨</h1>
+        <p style="margin-top: 10px; color: #b45f3b;">每一张照片都是故事</p>
+    </header>
+
+    <!-- 相册区域 - 所有照片将在这里显示 -->
+    <div id="gallery" class="gallery">
+        <!-- 照片卡片会由 JavaScript 动态生成 -->
+    </div>
+
+    <!-- 留言板区域（基于 Utterances） -->
+    <div class="comments-section">
+        <div class="comments-title">💬 朋友们的话</div>
+        <div id="comments-container"></div>
+    </div>
+    <footer>❤️ 只给最重要的人看 · 更新于 <span id="updateDate"></span></footer>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // 👇 这里是你的照片数据，按这个格式添加或修改即可
+    // 注意：图片需要先上传到网络（后面教你最简单的上传方法）
+    // --------------------------------------------------------------
+    const photos = [
+        {
+            imageUrl: "https://picsum.photos/id/20/400/400",  // 临时示例图片，请替换成你的真实图片链接
+            note: "第一次一起看海",
+            location: "厦门·白城沙滩",
+            date: "2025.03.08"
+        },
+        {
+            imageUrl: "https://picsum.photos/id/26/400/400",
+            note: "她做的提拉米苏",
+            location: "家里的小厨房",
+            date: "2025.03.15"
+        },
+        {
+            imageUrl: "https://picsum.photos/id/30/400/400",
+            note: "樱花树下的约定",
+            location: "武汉·东湖樱园",
+            date: "2025.03.25"
+        }
+        // 👉 你想增加照片时，就照着上面的格式继续往下加，用英文逗号隔开
+    ];
+
+    // 渲染相册
+    function renderGallery() {
+        const galleryDiv = document.getElementById('gallery');
+        if (!photos.length) {
+            galleryDiv.innerHTML = '<div style="text-align:center; grid-column:1/-1;">✨ 还没有照片，快去添加吧 ✨</div>';
+            return;
+        }
+        let html = '';
+        for (let p of photos) {
+            html += `
+                <div class="card">
+                    <img src="${p.imageUrl}" alt="${p.note}" loading="lazy" onerror="this.src='https://placehold.co/400x400?text=📸+图片加载失败'">
+                    <div class="info">
+                        <div class="note">📝 ${escapeHtml(p.note)}</div>
+                        <div class="meta">
+                            <span>📅 ${escapeHtml(p.date)}</span>
+                            <span>📍 ${escapeHtml(p.location)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        galleryDiv.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // 显示最后更新时间
+    document.getElementById('updateDate').innerText = new Date().toLocaleDateString();
+
+    // 渲染照片
+    renderGallery();
+
+    // --------------------------------------------------------------
+    // 留言板初始化（使用 Utterances，基于 GitHub Issues）
+    // 你需要修改下面 repo 的值为你的 GitHub 用户名/仓库名
+    // --------------------------------------------------------------
+    function initComments() {
+        // 重要：将下面这行中的 "你的用户名/你的仓库名" 替换成你自己的
+        // 例如： "zhangwei/love-album"
+        const repo = "你的用户名/你的仓库名";   // 👈 必改！不然留言无法工作
+        
+        const script = document.createElement('script');
+        script.src = 'https://utteranc.es/client.js';
+        script.setAttribute('repo', repo);
+        script.setAttribute('issue-term', 'pathname');
+        script.setAttribute('theme', 'github-light');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+        document.getElementById('comments-container').appendChild(script);
+    }
+
+    // 提醒用户配置 repo，避免留言功能报错
+    const repoHint = document.createElement('div');
+    repoHint.style.background = '#fff0e0';
+    repoHint.style.padding = '12px';
+    repoHint.style.borderRadius = '20px';
+    repoHint.style.marginBottom = '16px';
+    repoHint.style.fontSize = '0.9rem';
+    repoHint.innerHTML = '💡 留言板需要配置：把代码中 <code>repo</code> 变量改成你的 GitHub 仓库地址（例如 "myuser/love-album"）。<br>配置完成后刷新页面，访客就能用 GitHub 账号留言了。';
+    
+    // 检查是否已修改（简单判断：如果还包含“你的用户名”就显示提示）
+    const repoPlaceholder = "你的用户名/你的仓库名";
+    if (document.currentScript) {
+        // 延迟执行，确保 DOM 加载
+        setTimeout(() => {
+            if (repo === repoPlaceholder) {
+                document.getElementById('comments-container').appendChild(repoHint);
+            } else {
+                initComments();
+            }
+        }, 100);
+    } else {
+        if (repo === repoPlaceholder) {
+            document.getElementById('comments-container').appendChild(repoHint);
+        } else {
+            initComments();
+        }
+    }
+</script>
+</body>
+</html>
